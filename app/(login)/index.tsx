@@ -1,19 +1,14 @@
 import { supabase } from "@/utils/supabase";
 import { Link } from "expo-router";
 import React from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  StyleSheet,
-  Alert,
-} from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
+import { TextInput, Button, Text, Surface } from "react-native-paper";
 
 export default function LoginScreen() {
   const [loading, setLoading] = React.useState(false);
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
 
   async function signInWithEmail() {
     setLoading(true);
@@ -30,48 +25,58 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.card}>
+      <Surface style={styles.card} elevation={0}>
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Login</Text>
-          <Text style={styles.cardDescription}>
+          <Text variant='headlineMedium' style={styles.cardTitle}>
+            Login
+          </Text>
+          <Text variant='bodyMedium' style={styles.cardDescription}>
             Enter your email below to login to your account
           </Text>
         </View>
         <View style={styles.cardContent}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder='m@example.com'
-              keyboardType='email-address'
-              autoCapitalize='none'
-              value={email}
-              onChangeText={text => setEmail(text)}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <View style={styles.passwordHeader}>
-              <Text style={styles.label}>Password</Text>
-              <Link href='/forgot' style={styles.forgotPassword}>
-                Forgot your password?
-              </Link>
-            </View>
-            <TextInput
-              style={styles.input}
-              secureTextEntry
-              value={password}
-              onChangeText={text => setPassword(text)}
-            />
-          </View>
-          <Pressable
-            style={loading ? styles.buttonDisabled : styles.button}
+          <TextInput
+            label='Email'
+            mode='outlined'
+            keyboardType='email-address'
+            autoCapitalize='none'
+            value={email}
+            onChangeText={text => setEmail(text)}
+            autoComplete='email'
+            style={styles.input}
+          />
+
+          <TextInput
+            label='Password'
+            mode='outlined'
+            value={password}
+            onChangeText={text => setPassword(text)}
+            secureTextEntry={!showPassword}
+            right={
+              <TextInput.Icon
+                icon={showPassword ? "eye-off" : "eye"}
+                onPress={() => setShowPassword(!showPassword)}
+              />
+            }
+            style={styles.input}
+          />
+
+          <Link href='/forgot' style={styles.forgotPassword}>
+            Forgot your password?
+          </Link>
+
+          <Button
+            mode='contained'
             onPress={signInWithEmail}
+            loading={loading}
             disabled={loading}
+            style={styles.button}
           >
-            <Text style={styles.buttonText}>Login</Text>
-          </Pressable>
+            Login
+          </Button>
+
           <View style={styles.signUpContainer}>
-            <Text style={styles.signUpText}>
+            <Text variant='bodyMedium' style={styles.signUpText}>
               Don't have an account?{" "}
               <Link href='/register' style={styles.signUpLink}>
                 Sign up
@@ -79,98 +84,53 @@ export default function LoginScreen() {
             </Text>
           </View>
         </View>
-      </View>
+      </Surface>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     justifyContent: "center",
+    padding: 16,
   },
   card: {
     borderRadius: 8,
     padding: 16,
-    width: "100%",
-    elevation: 3,
-    shadowColor: "#0000",
   },
   cardHeader: {
-    marginBottom: 16,
+    marginBottom: 24,
   },
   cardTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
     marginBottom: 8,
+    fontWeight: "bold",
   },
   cardDescription: {
-    fontSize: 14,
     color: "#666",
   },
   cardContent: {
     gap: 16,
   },
-  inputContainer: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 4,
-    padding: 8,
-    fontSize: 16,
-  },
-  passwordHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    backgroundColor: "transparent",
   },
   forgotPassword: {
     fontSize: 12,
     color: "#18181b",
     textDecorationLine: "underline",
+    alignSelf: "flex-end",
+    marginTop: -8,
   },
   button: {
-    backgroundColor: "#18181b",
-    borderRadius: 4,
-    padding: 12,
-    alignItems: "center",
-  },
-  buttonDisabled: {
-    backgroundColor: "#18181b",
-    borderRadius: 4,
-    padding: 12,
-    alignItems: "center",
-    opacity: 0.8,
-  },
-  buttonText: {
-    color: "#fafafa",
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  outlineButton: {
-    borderWidth: 1,
-    borderColor: "#18181b",
-    borderRadius: 4,
-    padding: 12,
-    alignItems: "center",
-  },
-  outlineButtonText: {
-    color: "#18181b",
-    fontSize: 16,
-    fontWeight: "500",
+    padding: 4,
+    marginTop: 8,
   },
   signUpContainer: {
     marginTop: 16,
     alignItems: "center",
   },
   signUpText: {
-    fontSize: 14,
     color: "#666",
   },
   signUpLink: {

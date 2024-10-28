@@ -1,34 +1,54 @@
 import { supabase } from "@/utils/supabase";
 import { Link } from "expo-router";
 import React from "react";
+import { View, StyleSheet } from "react-native";
 import {
-  View,
-  Text,
   TextInput,
-  Pressable,
-  StyleSheet,
-  Alert,
-} from "react-native";
+  Button,
+  Text,
+  Surface,
+  Snackbar,
+  Portal,
+} from "react-native-paper";
 
 export default function LoginScreen() {
-  const [loading, setLoading] = React.useState(true);
+  // const theme = useTheme();
+  const [loading, setLoading] = React.useState(false);
   const [displayName, setDisplayName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [passwordConfirm, setPasswordConfirm] = React.useState("");
+  const [snackbarText, setSnackbarText] = React.useState("");
+  const [snackbarVisible, setSnackbarVisible] = React.useState(false);
 
   async function signUpNewUser() {
     setLoading(true);
-    if (password.length == 0 || email.length == 0) {
-      Alert.alert("Error", "Fill all the areas");
-      return;
-    }
-    if (password !== passwordConfirm) {
-      Alert.alert("Error", "Your password doesn't match");
-      return;
+
+    try {
+      if (displayName.length == 0) {
+        throw new Error("Name is required");
+      }
+      if (password.length == 0) {
+        throw new Error("Password is required");
+      }
+      if (email.length == 0) {
+        throw new Error("Email is required");
+      }
+      if (password !== passwordConfirm) {
+        throw new Error(
+          "Your password did not match. Please re-check and try again"
+        );
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setSnackbarText(`${error.message}`);
+        setSnackbarVisible(true);
+        setLoading(false);
+        return;
+      }
     }
 
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -38,72 +58,73 @@ export default function LoginScreen() {
       },
     });
     if (error) {
-      Alert.alert(error.name, error.message);
-      return;
-    }
-    if (data) {
-      Alert.alert("success", data.user?.user_metadata.displayName);
+      setSnackbarText(error.message);
+      setSnackbarVisible(true);
+      setLoading(false);
     }
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.card}>
+      <Surface style={styles.card} elevation={0}>
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Register</Text>
-          <Text style={styles.cardDescription}>
-            Enter your email below to register new account
+          <Text variant='headlineMedium' style={styles.cardTitle}>
+            Login
+          </Text>
+          <Text variant='bodyMedium' style={styles.cardDescription}>
+            Enter your email below to login to your account
           </Text>
         </View>
         <View style={styles.cardContent}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Name</Text>
-            <TextInput
-              style={styles.input}
-              placeholder='John Doe'
-              autoCapitalize='words'
-              value={displayName}
-              onChangeText={text => setDisplayName(text)}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder='m@example.com'
-              keyboardType='email-address'
-              autoCapitalize='none'
-              value={email}
-              onChangeText={text => setEmail(text)}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <View style={styles.passwordHeader}>
-              <Text style={styles.label}>Password</Text>
-            </View>
-            <TextInput
-              style={styles.input}
-              secureTextEntry
-              value={password}
-              onChangeText={text => setPassword(text)}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <View style={styles.passwordHeader}>
-              <Text style={styles.label}>Confirm your password</Text>
-            </View>
-            <TextInput
-              style={styles.input}
-              secureTextEntry
-              value={passwordConfirm}
-              onChangeText={text => setPasswordConfirm(text)}
-            />
-          </View>
-          <Pressable style={styles.button} onPress={signUpNewUser}>
-            <Text style={styles.buttonText}>Register</Text>
-          </Pressable>
+          <TextInput
+            label='Name'
+            mode='outlined'
+            keyboardType='default'
+            autoCapitalize='words'
+            value={displayName}
+            onChangeText={text => setDisplayName(text)}
+            autoComplete='name'
+            style={styles.input}
+          />
+          <TextInput
+            label='Email'
+            mode='outlined'
+            keyboardType='email-address'
+            autoCapitalize='none'
+            value={email}
+            onChangeText={text => setEmail(text)}
+            autoComplete='email'
+            style={styles.input}
+          />
+          <TextInput
+            label='Password'
+            mode='outlined'
+            value={password}
+            secureTextEntry
+            onChangeText={text => setPassword(text)}
+            style={styles.input}
+          />
+          <TextInput
+            label='Confirm password'
+            mode='outlined'
+            value={passwordConfirm}
+            secureTextEntry
+            onChangeText={text => setPasswordConfirm(text)}
+            style={styles.input}
+          />
+
+          <Button
+            mode='contained'
+            onPress={signUpNewUser}
+            loading={loading}
+            disabled={loading}
+            style={styles.button}
+          >
+            Register
+          </Button>
+
           <View style={styles.signUpContainer}>
-            <Text style={styles.signUpText}>
+            <Text variant='bodyMedium' style={styles.signUpText}>
               Already have account?{" "}
               <Link href='/(login)' style={styles.signUpLink}>
                 Login
@@ -111,91 +132,61 @@ export default function LoginScreen() {
             </Text>
           </View>
         </View>
-      </View>
+      </Surface>
+      <Portal>
+        <Snackbar
+          visible={snackbarVisible}
+          onDismiss={() => setSnackbarVisible(false)}
+        >
+          {snackbarText}
+        </Snackbar>
+      </Portal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     justifyContent: "center",
+    padding: 16,
   },
   card: {
     borderRadius: 8,
     padding: 16,
-    width: "100%",
-    elevation: 3,
-    shadowColor: "#0000",
   },
   cardHeader: {
-    marginBottom: 16,
+    marginBottom: 24,
   },
   cardTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
     marginBottom: 8,
+    fontWeight: "bold",
   },
   cardDescription: {
-    fontSize: 14,
     color: "#666",
   },
   cardContent: {
     gap: 16,
   },
-  inputContainer: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 4,
-    padding: 8,
-    fontSize: 16,
-  },
-  passwordHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    backgroundColor: "transparent",
   },
   forgotPassword: {
     fontSize: 12,
     color: "#18181b",
     textDecorationLine: "underline",
+    alignSelf: "flex-end",
+    marginTop: -8,
   },
   button: {
-    backgroundColor: "#18181b",
-    borderRadius: 4,
-    padding: 12,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#fafafa",
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  outlineButton: {
-    borderWidth: 1,
-    borderColor: "#18181b",
-    borderRadius: 4,
-    padding: 12,
-    alignItems: "center",
-  },
-  outlineButtonText: {
-    color: "#18181b",
-    fontSize: 16,
-    fontWeight: "500",
+    padding: 4,
+    marginTop: 8,
   },
   signUpContainer: {
     marginTop: 16,
     alignItems: "center",
   },
   signUpText: {
-    fontSize: 14,
     color: "#666",
   },
   signUpLink: {
