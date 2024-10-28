@@ -16,10 +16,10 @@ const InitialLayout = () => {
 
     if (user) {
       // Redirect to home if user is signed in and in auth group
-      router.replace("/(tabs)/");
+      router.replace("/(tabs)");
     } else if (!user && !inAuthGroup) {
       // Redirect to sign-in if user is not signed in and trying to access protected routes
-      router.replace("/(login)/");
+      router.replace("/(login)");
     }
   }, [user, loading, segments]);
 

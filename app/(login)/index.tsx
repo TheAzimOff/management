@@ -1,14 +1,23 @@
 import { supabase } from "@/utils/supabase";
 import { Link } from "expo-router";
 import React from "react";
-import { View, StyleSheet, Alert } from "react-native";
-import { TextInput, Button, Text, Surface } from "react-native-paper";
+import { View, StyleSheet } from "react-native";
+import {
+  TextInput,
+  Button,
+  Text,
+  Surface,
+  Portal,
+  Snackbar,
+} from "react-native-paper";
 
 export default function LoginScreen() {
   const [loading, setLoading] = React.useState(false);
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
+  const [snackbarText, setSnackbarText] = React.useState("");
+  const [snackbarVisible, setSnackbarVisible] = React.useState(false);
 
   async function signInWithEmail() {
     setLoading(true);
@@ -18,7 +27,10 @@ export default function LoginScreen() {
       password: password,
     });
 
-    if (error) Alert.alert(error.name, error.message);
+    if (error) {
+      setSnackbarText(`${error.name}: ${error.message}`);
+      setSnackbarVisible(true);
+    }
 
     setLoading(false);
   }
@@ -61,7 +73,7 @@ export default function LoginScreen() {
             style={styles.input}
           />
 
-          <Link href='/forgot' style={styles.forgotPassword}>
+          <Link href='/(login)/reset-password' style={styles.forgotPassword}>
             Forgot your password?
           </Link>
 
@@ -85,6 +97,14 @@ export default function LoginScreen() {
           </View>
         </View>
       </Surface>
+      <Portal>
+        <Snackbar
+          visible={snackbarVisible}
+          onDismiss={() => setSnackbarVisible(false)}
+        >
+          {snackbarText}
+        </Snackbar>
+      </Portal>
     </View>
   );
 }
